@@ -25,6 +25,7 @@ func echo_srv(c net.Conn, wg *sync.WaitGroup) {
             return
         }
         fmt.Printf("SERVER: received %v bytes\n", n)
+		fmt.Println(msg[:n])
 
         n, err = c.Write(msg[:n])
         if err != nil {

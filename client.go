@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strconv"
 )
 
 func main() {
@@ -13,20 +14,18 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	_, err = conn.Write([]byte("Hello Server!"))
-	if err != nil {
-		log.Fatalln(err)
+	// Send Packets
+	for  i := 0; i < 10; i++ {
+		_, err = conn.Write([]byte(strconv.Itoa(i)))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Println("Message sent: "+strconv.Itoa(i))
 	}
-	fmt.Println("Message sent: Hello Server!")
 
-	_, err = conn.Write([]byte("How are you?"))
-	if err != nil {
-		log.Fatalln(err)
-	}
-	fmt.Println("Message sent: How are you?")
-
-	for {
-		buffer := make([]byte, 1400)
+	// Receive Packets
+	for i := 0; i < 10; i++ 	{
+		buffer := make([]byte, 1000)
 		dataSize, err := conn.Read(buffer)
 		if err != nil {
 			fmt.Println("connection closed")
@@ -37,3 +36,17 @@ func main() {
 		fmt.Println("received message: ", string(data))
 	}
 }
+
+
+/*
+echo.go
+	TCP packets are combined by the echo server because no application is there to separate them
+
+echo1.go
+
+
+echo2.go
+
+
+
+ */
