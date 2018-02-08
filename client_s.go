@@ -12,13 +12,14 @@ import (
 )
 
 func main() {
+	k := 12
 	conn, err := net.Dial("tcp", "localhost:16667")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// Send & Receive Packets
-	for  i := 0; i < 10; i++ {
+	for  i := 0; i < k; i++ {
 		// SEND
 		_, err = conn.Write([]byte(strconv.Itoa(i)))
 		if err != nil {

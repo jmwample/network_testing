@@ -18,7 +18,8 @@ import (
 const PORT = 16667
 
 func main() {
-    server, err := net.Listen("tcp", ":" + strconv.Itoa(PORT))
+	fmt.Println("server listening on 16667")
+	server, err := net.Listen("tcp", ":" + strconv.Itoa(PORT))
     if server == nil {
         panic("couldn't start listening: " + err.Error())
     }
