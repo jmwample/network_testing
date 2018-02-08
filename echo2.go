@@ -23,7 +23,7 @@ func main() {
 		}
 		fmt.Println("new connection")
 
-		// listen to connections in another gorutine
+		// listen to connections in another goroutine
 		go listenConnection(conn)
 	}
 }

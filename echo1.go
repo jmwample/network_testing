@@ -49,10 +49,12 @@ func clientConns(listener net.Listener) chan net.Conn {
 func handleConn(client net.Conn) {
     b := bufio.NewReader(client)
     for {
-        line, err := b.ReadBytes('\n')
+    	msg := make([]byte, 100)
+        n, err := b.Read(msg)
+        fmt.Println(msg[:n])
         if err != nil { // EOF, or worse
             break
         }
-        client.Write(line)
+        client.Write(msg[:n])
     }
 }

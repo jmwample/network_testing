@@ -1,4 +1,7 @@
 package main
+// Parallel
+// 		TCP packets are combined by the echo server because no application
+// 		is there to separate them. Same on the return journey.
 
 
 import (
@@ -14,7 +17,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	// Send Packets
+	// Send Packet Burst
 	for  i := 0; i < 10; i++ {
 		_, err = conn.Write([]byte(strconv.Itoa(i)))
 		if err != nil {
@@ -23,7 +26,7 @@ func main() {
 		fmt.Println("Message sent: "+strconv.Itoa(i))
 	}
 
-	// Receive Packets
+	// Receive Packet Burst?
 	for i := 0; i < 10; i++ 	{
 		buffer := make([]byte, 1000)
 		dataSize, err := conn.Read(buffer)
@@ -36,17 +39,3 @@ func main() {
 		fmt.Println("received message: ", string(data))
 	}
 }
-
-
-/*
-echo.go
-	TCP packets are combined by the echo server because no application is there to separate them
-
-echo1.go
-
-
-echo2.go
-
-
-
- */
