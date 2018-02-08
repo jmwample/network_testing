@@ -8,8 +8,10 @@ import (
 	tls "github.com/Jigsaw-Code/utls"
 )
 
+const PortTLS = 16668
+
 func main() {
-	dialConn, err := net.Dial("tcp", "localhost:16667")
+	dialConn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", PortTLS))
 	if err != nil {
 		log.Fatalln(err)
 	}
