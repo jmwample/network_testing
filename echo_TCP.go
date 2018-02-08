@@ -7,33 +7,34 @@ import (
 	"io"
 )
 
-const PORT = 16667
+
+const PortTCP = 16667
 
 
 func main() {
 	var wg sync.WaitGroup
 
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", PORT))
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", PortTCP))
 	if err != nil {
 		fmt.Print(err)
 		return
 	}
 	defer ln.Close()
 
-	fmt.Printf("[SVR] TCP echo server listening on port %d\n", PORT)
+	fmt.Printf("[SVR] TCP echo server listening on port %d\n", PortTCP)
 
 
-	conn := receiveConn(ln)
+	conn := receiveConnTCP(ln)
 	for {
 		wg.Add(1)
-		go echo(<-conn, &wg)
+		go echoTCP(<-conn, &wg)
 
 		wg.Wait()
 	}
 }
 
 
-func receiveConn(listener net.Listener) chan net.Conn{
+func receiveConnTCP(listener net.Listener) chan net.Conn{
 	ch := make(chan net.Conn)
 	go func() {
 		for {
@@ -50,7 +51,7 @@ func receiveConn(listener net.Listener) chan net.Conn{
 }
 
 
-func echo(client net.Conn,  wg *sync.WaitGroup) {
+func echoTCP(client net.Conn,  wg *sync.WaitGroup) {
 	defer client.Close()
 	defer wg.Done()
 
@@ -60,7 +61,7 @@ func echo(client net.Conn,  wg *sync.WaitGroup) {
 
 		n, err := client.Read(msg)
 		if err == io.EOF {
-			fmt.Printf("[EOF] %v (%d bytes ignored)\n", client.RemoteAddr(), n)
+			fmt.Printf("[EOF]  ><  %v\t(%d bytes ignored)\n", client.RemoteAddr(), n)
 			return
 		} else if err != nil {
 			fmt.Printf("[ERR] read\n%v", err.Error())
@@ -76,7 +77,7 @@ func echo(client net.Conn,  wg *sync.WaitGroup) {
 			return
 		}
 
-		fmt.Printf("[SVR] --> %v\n", client.RemoteAddr())
+		fmt.Printf("[SVR]  --> %v\t%v\n", client.RemoteAddr(), msg[:n])
 
 	}
 }

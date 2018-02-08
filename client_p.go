@@ -13,8 +13,7 @@ import (
 
 func main() {
 	conn, err := net.Dial("tcp", "localhost:16667")
-	sent := 0
-	k := 15
+	sent, k := 0, 15
 	if err != nil {
 		log.Fatalln(err)
 	}
