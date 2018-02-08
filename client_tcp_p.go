@@ -11,8 +11,10 @@ import (
 	"strconv"
 )
 
+const PortTCP = 16667
+
 func main() {
-	conn, err := net.Dial("tcp", "localhost:16667")
+	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", PortTCP))
 	sent, k := 0, 15
 	if err != nil {
 		log.Fatalln(err)
