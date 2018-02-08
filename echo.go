@@ -1,65 +1,68 @@
 package main
 
 import (
-    "net"
-    "fmt"
-    "sync"
-    "io"
+	"crypto/rand"
+	"crypto/tls"
+	"log"
+	"net"
+	"crypto/x509"
 )
 
-
-func echo_srv(c net.Conn, wg *sync.WaitGroup) {
-    defer c.Close()
-    defer wg.Done()
-
-    for {
-        msg := make([]byte, 1000)
-
-        n, err := c.Read(msg)
-        if err == io.EOF {
-            fmt.Printf("SERVER: received EOF (%d bytes ignored)\n", n)
-            return
-        } else  if err != nil {
-            fmt.Printf("ERROR: read\n")
-            fmt.Print(err)
-            return
-        }
-        fmt.Printf("SERVER: received %v bytes\n", n)
-		fmt.Println(msg[:n])
-
-        n, err = c.Write(msg[:n])
-        if err != nil {
-            fmt.Printf("ERROR: write\n")
-            fmt.Print(err)
-            return
-        }
-        fmt.Printf("SERVER: sent %v bytes\n", n)
-    }
+func main() {
+	cert, err := tls.LoadX509KeyPair("certs/server.pem", "certs/server.key")
+	if err != nil {
+		log.Fatalf("server: loadkeys: %s", err)
+	}
+	config := tls.Config{Certificates: []tls.Certificate{cert}}
+	config.Rand = rand.Reader
+	service := "0.0.0.0:8000"
+	listener, err := tls.Listen("tcp", service, &config)
+	if err != nil {
+		log.Fatalf("server: listen: %s", err)
+	}
+	log.Print("server: listening")
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Printf("server: accept: %s", err)
+			break
+		}
+		defer conn.Close()
+		log.Printf("server: accepted from %s", conn.RemoteAddr())
+		tlscon, ok := conn.(*tls.Conn)
+		if ok {
+			log.Print("ok=true")
+			state := tlscon.ConnectionState()
+			for _, v := range state.PeerCertificates {
+				log.Print(x509.MarshalPKIXPublicKey(v.PublicKey))
+			}
+		}
+		go handleClient(conn)
+	}
 }
 
-func main() {
-    var wg sync.WaitGroup
-    var echo_port = 16667
+func handleClient(conn net.Conn) {
+	defer conn.Close()
+	buf := make([]byte, 512)
+	for {
+		log.Print("server: conn: waiting")
+		n, err := conn.Read(buf)
+		if err != nil {
+			if err != nil {
+				log.Printf("server: conn: read: %s", err)
+			}
+			break
+		}
+		log.Printf("server: conn: echo %q\n", string(buf[:n]))
+		n, err = conn.Write(buf[:n])
 
-    ln, err := net.Listen("tcp", fmt.Sprintf(":%d", echo_port))
+		n, err = conn.Write(buf[:n])
+		log.Printf("server: conn: wrote %d bytes", n)
 
-    fmt.Printf("TCP echo server listening on port %d\n", echo_port)
-    if err != nil {
-            fmt.Print(err)
-            return
-    }
-    defer ln.Close()
-
-    for {
-        conn, err := ln.Accept()
-        if err != nil {
-                fmt.Print(err)
-                return
-        }
-        wg.Add(1)
-        go echo_srv(conn, &wg)
-
-        wg.Wait()
-    }
-
+		if err != nil {
+			log.Printf("server: write: %s", err)
+			break
+		}
+	}
+	log.Println("server: conn: closed")
 }

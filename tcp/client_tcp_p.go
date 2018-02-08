@@ -1,7 +1,7 @@
-package main
-// Serial
-// 		TCP Packets are sent one by one. waiting for a response then
-// 		sending more.
+package tcp
+// Parallel
+// 		TCP packets are combined by the echo server because no application
+// 		is there to separate them. Same on the return journey.
 
 
 import (
@@ -14,30 +14,37 @@ import (
 const PortTCP = 16667
 
 func main() {
-	k := 12
 	conn, err := net.Dial("tcp", fmt.Sprintf("localhost:%d", PortTCP))
+	sent, k := 0, 15
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	// Send & Receive Packets
+	// Send Packet Burst
 	for  i := 0; i < k; i++ {
-		// SEND
 		_, err = conn.Write([]byte(strconv.Itoa(i)))
 		if err != nil {
 			log.Fatalln(err)
 		}
+		sent += len([]byte(strconv.Itoa(i)))
 		fmt.Println("Message sent: "+strconv.Itoa(i))
+	}
 
-		// RECEIVE
+	// Receive Packet Burst?
+	for i := 0; i < k; i++ 	{
 		buffer := make([]byte, 1000)
-		dataSize, err := conn.Read(buffer)
+		n, err := conn.Read(buffer)
 		if err != nil {
 			fmt.Println("connection closed")
 			return
 		}
-
-		data := buffer[:dataSize]
+		data := buffer[:n]
 		fmt.Println("received message: ", string(data))
+
+		sent -= n
+		if sent == 0 {
+			fmt.Println("connection closed")
+			return
+		}
 	}
 }
